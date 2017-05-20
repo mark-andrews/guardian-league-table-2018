@@ -1,0 +1,116 @@
+---
+title: "Process the Guardian League Tables 2018 xls file"
+author: "Mark Andrews"
+date: "20 May 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE}
+library(readxl)
+library(dplyr)
+```
+
+# How to obtain the original xls file 
+
+The Guardian University League Tables 2018 provide ratings of all undergraduate degrees in all UK universities. The landing page for the tables is [here](https://www.theguardian.com/education/ng-interactive/2017/may/16/university-league-tables-2018). On [this page](https://www.theguardian.com/education/2016/may/23/methodology-behind-the-guardian-university-guide-2017), they provide a link to a downloadable spreadsheet. However, I've had some trouble with the link to the spreadsheet. Initially, (when I tried on May17) the link did not work at all; it just linked back to the page itself. A few days later (on May 20), the link did resolve to a google docs page. However, that page was just a spreadsheet viewer and it was not possible to download this sheet and so it was not any more useful than the html based tables on the Guardian website itself. After changing the query string at the end of the URL, it redirected me to [here](https://docs.google.com/spreadsheets/d/1P1AiFGB5UFO0v26Ufe_3YNOT4lISK6DAaC8dvDRiVzs/edit#gid=1544561606), and from there I was able to download a .xls sheet of the tables. Just in case any more trouble with these links occur, I have put a copy of this spreadsheet in this directory.
+
+* The file is `Guardian University Guide 2018.xlsx`. 
+* Its sha1sum hash is `eee95e7d17172e3818e9ee33632e499f8bd8b5db`.
+
+## Make some helper functions
+
+A function to read a worksheet `worksheet` from xls workbook in path `path`. We'll skip the first row on each sheet as it is just the subject name.
+```{r}
+  read.worksheet <- function(worksheet){
+    read_excel(worksheet,
+               path=path,
+               col_names=TRUE,
+               skip=1,
+               trim_ws=TRUE,
+               na=' ')
+  }
+```
+
+A function to read the name of the degree subject from each worksheet. It is in cell A1.
+```{r}
+read.subject.name <- function(worksheet){
+  .subject.name <- read_excel(worksheet,
+                              path=path,
+                              col_names = FALSE,
+                              range='A1:A1') %>% as.data.frame()
+  .subject.name[1,1]
+}
+```
+
+
+# Read and process the original xls 
+
+Extract each subject specific worksheet from the xls workbook. The first worksheet in the workbook is the institutional aggregate across all subjects. The last two sheets are empty. So we just use sheets 2 to 55. We then extract the name of the degree subject from cell A1 of each workbook. And finally, we assign the name of the subject to each data frame in the list of data frames.
+```{r}
+path <- "../data/Guardian University Guide 2018.xlsx"
+worksheet.names <- excel_sheets(path)
+
+first.sheet <- 2
+last.sheet <- 55
+
+subject.dataframes <- lapply(as.list(worksheet.names[first.sheet:last.sheet]),
+                             read.worksheet)
+
+subject.names <- do.call(rbind,
+                         lapply(as.list(worksheet.names[first.sheet:last.sheet]),
+                                read.subject.name))[,1]
+
+names(subject.dataframes) <- subject.names
+```
+
+## Make one big "tidy" data-frame
+
+We'll make one big data frame with all information from the subject specific data frames combined. For this, we'll need to include a new column with the subject's name. We'll filter out completely empty rows too. 
+
+```{r}
+get.cleaner.dataframe <- function(i){
+  select(subject.dataframes[[i]],
+         institution=`Name of Institution`,
+         score=`Guardian score/100`,
+         sat.teaching=`% Satisfied with Teaching`,
+         sat.course=`% Satisfied overall with course`,
+         sat.assess=`% Satisfied with Assessment`,
+         expend=`Expenditure per student (FTE)`,
+         ss.ratio=`Student:staff ratio`,
+         prospects=`Career prospects`,
+         value=`Value added score/10`,
+         tariff=`Average Entry Tariff`,
+         subject.rank=Rank) %>%
+    na.omit() %>% # Filter out empty rows here
+    mutate(subject=names(subject.dataframes)[i]) %>%
+    select(institution, subject, everything())
+}
+
+glt2018.Df <- do.call(rbind,
+                      lapply(seq_along(subject.dataframes), 
+                             get.cleaner.dataframe)
+) %>% as.data.frame() 
+
+# Convert some variables to factors
+factor.variables <- c('institution',
+                      'subject')
+
+glt2018.Df[,factor.variables] <- lapply(glt2018.Df[, factor.variables],
+                                        factor)
+
+# Make sure subject.rank is numeric not character
+glt2018.Df$subject.rank <- as.numeric(glt2018.Df$subject.rank)
+
+```
+
+
+
+Finally, save the list of data frames as a `.Rda` file. 
+```{r}
+save(glt2018.Df, file='../data/glt2018.Rda')
+```
+
