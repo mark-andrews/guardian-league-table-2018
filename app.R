@@ -77,7 +77,7 @@ ui <- fluidPage(
 		    "provide evaluation scores of 54 university degree subjects provided across 149 different institutions in the UK.",
 		    "These scores are based on aggregations of 8 different variables:
 		    Graduate prospects, student satisfaction with course,
-		    student satisfaction with teaching, student satisfaction with assessement, staff-student ratio, expenditure per
+		    student satisfaction with teaching, student satisfaction with assessment, staff-student ratio, expenditure per
 		    student, entry tariff, and value added.",
 		    "This app allows you to select each one the these variables (and also the overall aggregate score), and view its distribution, grouped either by the degree subject or by the institution.",
                     "All code for this demo can be found on",
