@@ -4,6 +4,9 @@ The shiny app allows you to view the distribution of the values the individual
 factors (like teaching satisfaction, graduate prospects, etc) that make up the
 aggregate scores. These can e grouped either subject or by insitution.
 
+The app is online here:
+https://lawsofthought.shinyapps.io/guardian-league-table-2018/
+
 The data used in this demo was provided by the Guardian and was downloaded from
 [here](https://docs.google.com/spreadsheets/d/1P1AiFGB5UFO0v26Ufe_3YNOT4lISK6DAaC8dvDRiVzs/edit#gid=1544561606).
 A copy of this `.xls` sheet is available [here](data/GuardianUniversityGuide2018.xlsx).
