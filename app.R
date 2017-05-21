@@ -54,7 +54,13 @@ evaluation.factors <- list(sat.teaching = list(variable = 'sat.teaching',
                                          title = 'Entry tariff',
                                          y.min = 50, 
                                          y.max = 250, 
-                                         y.step = 25)
+                                         y.step = 25),
+                           score = list(variable = 'score', 
+                                         label = 'Overall Guardian score', 
+                                         title = 'Overall score',
+                                         y.min = 0, 
+                                         y.max = 100, 
+                                         y.step = 10)
 )
 
 
@@ -64,14 +70,22 @@ ui <- fluidPage(
   titlePanel("Guardian's University League Tables 2018"),
   fluidRow(
     column(3,
-           helpText("Select one the variables that contribute to the Guardian's University league table scores.",
-                    "Then view the distribution of values for this variable, grouped either by the degree subject or by institution.",
+           helpText("The ",
+		    a('Guardian university league tables',
+		     href="https://www.theguardian.com/education/universityguide",
+		    target='_blank'),
+		    "provide evaluation scores of 54 university degree subjects provided across 149 different institutions in the UK.",
+		    "These scores are based on aggregations of 8 different variables:
+		    Graduate prospects, student satisfaction with course,
+		    student satisfaction with teaching, student satisfaction with assessement, staff-student ratio, expenditure per
+		    student, entry tariff, and value added.",
+		    "This app allows you to select each one the these variables (and also the overall aggregate score), and view its distribution, grouped either by the degree subject or by the institution.",
                     "All code for this demo can be found on",
                     a("GitHub.",
                       href="https://github.com/lawsofthought/guardian-league-table-2018",
                       target='_blank')
            ),
-             selectInput("variable", "Evaluation factor:",
+             selectInput("variable", "Choose a variable:",
                          c('Graduate prospects' = 'prospects',
                            "Satisfaction with course" = "sat.course",
                            "Satisfaction with teaching" = "sat.teaching",
@@ -79,7 +93,8 @@ ui <- fluidPage(
                            "Staff student ratio" = 'ss.ratio',
                            "Expenditure per student" = 'expend',
                            "Entry tariff" = 'tariff',
-                           'Value added' = 'value')),
+                           'Value added' = 'value',
+                           'Overall score' = 'score')),
              radioButtons("group_by", "Group values by:",
                           c("Subject" = "subject",
                             "Institution" = "institution"))
